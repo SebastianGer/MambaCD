@@ -169,8 +169,8 @@ class Trainer(object):
                 output_clf = map_labels_to_colors(np.squeeze(output_clf), ori_label_value_dict=ori_label_value_dict, target_label_value_dict=target_label_value_dict)
                 output_clf[output_loc == 0] = 0
 
-                imageio.imwrite(os.path.join(self.building_map_T1_saved_path, image_name), output_loc.astype(np.uint8))
-                imageio.imwrite(os.path.join(self.change_map_T2_saved_path, image_name), output_clf.astype(np.uint8))
+                imageio.imwrite(os.path.join(self.building_map_T1_saved_path, image_name.split("/")[-1]), output_loc.astype(np.uint8))
+                imageio.imwrite(os.path.join(self.change_map_T2_saved_path, image_name.split("/")[-1]), output_clf.astype(np.uint8))
 
         loc_f1_score = self.total_evaluator_loc.Pixel_F1_score()
         damage_f1_score = self.total_evaluator_clf.Damage_F1_socore()

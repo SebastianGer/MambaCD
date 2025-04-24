@@ -169,28 +169,24 @@ class DamageAssessmentDatset(Dataset):
         return pre_img, post_img, loc_label, clf_label
 
     def __getitem__(self, index):
-        if 'train' in self.data_pro_type: 
-            parts = self.data_list[index].rsplit('_', 2)
+        # self.dataset_path must lead to xView2, self.data_list[index] has to be something like train/images/guatemala-volcano_00000004
+        # This is necessary to allow for using tier3 as training data, as well as changing the train/test split
 
-            pre_img_name = f"{parts[0]}_pre_disaster_{parts[1]}_{parts[2]}.png"
-            post_img_name = f"{parts[0]}_post_disaster_{parts[1]}_{parts[2]}.png"
-
-            pre_path = os.path.join(self.dataset_path, 'images', pre_img_name)
-            post_path = os.path.join(self.dataset_path, 'images', post_img_name)
-            
-            loc_label_path = os.path.join(self.dataset_path, 'masks', pre_img_name)
-            clf_label_path = os.path.join(self.dataset_path, 'masks', post_img_name)
+        pre_path = os.path.join(self.dataset_path, self.data_list[index] + '_pre_disaster.png')
+        post_path = os.path.join(self.dataset_path, self.data_list[index] + '_post_disaster.png')
+        mask_or_target = "masks"
+        if "hold" in self.data_list[index]:
+                mask_or_target = "targets"
+                loc_label_path = os.path.join(self.dataset_path, self.data_list[index].replace("images", "targets") + '_pre_disaster_target.png')
+                clf_label_path = os.path.join(self.dataset_path, self.data_list[index].replace("images", "targets") + '_post_disaster_target.png')
         else:
-            pre_path = os.path.join(self.dataset_path, 'images', self.data_list[index] + '_pre_disaster.png')
-            post_path = os.path.join(self.dataset_path, 'images', self.data_list[index] + '_post_disaster.png')
-            loc_label_path = os.path.join(self.dataset_path, 'masks', self.data_list[index]+ '_pre_disaster.png')
-            clf_label_path = os.path.join(self.dataset_path, 'masks', self.data_list[index]+ '_post_disaster.png')
+                loc_label_path = os.path.join(self.dataset_path, self.data_list[index].replace("images", "masks") + '_pre_disaster.png')
+                clf_label_path = os.path.join(self.dataset_path, self.data_list[index].replace("images", "masks") + '_post_disaster.png')
 
         pre_img = self.loader(pre_path)
         post_img = self.loader(post_path)
-        loc_label = self.loader(loc_label_path)[:,:,0]
-        clf_label = self.loader(clf_label_path)[:,:,0]
-
+        loc_label = self.loader(loc_label_path)
+        clf_label = self.loader(clf_label_path)
         if 'train' in self.data_pro_type:
             pre_img, post_img, loc_label, clf_label = self.__transforms(True, pre_img, post_img, loc_label, clf_label)
             clf_label[clf_label == 0] = 255
